@@ -1,0 +1,23 @@
+[project]
+name = "sistem-florist-backend"
+version = "0.1.0"
+description = "Backend sistem internal bisnis florist pipe cleaner."
+requires-python = ">=3.15"
+dependencies = [
+    "alembic>=1.20.0",
+    "argon2-cffi>=25.1.0",
+    "fastapi>=0.143.0",
+    "psycopg[binary]>=3.3.6",
+    "pydantic-settings>=2.15.0",
+    "sqlalchemy>=2.1.4",
+    "uvicorn>=0.54.0",
+]
+
+[tool.uv]
+package = false
+cache-dir = ".uv-cache"
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.13.1",
+]
