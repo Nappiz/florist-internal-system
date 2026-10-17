@@ -39,6 +39,12 @@ class LoginEndpointTests(AuthEndpointTestCase):
         self.assertEqual(blocked.status_code, 429)
         self.assertIn("retry-after", blocked.headers)
 
+    def test_username_and_email_aliases_share_the_account_attempt_limit(self):
+        for name in ("staff", "staff", "staff", "staff@legacy.invalid", "STAFF@LEGACY.INVALID"):
+            response = self.client.post("/auth/login", json={"username": name, "password": "Incorrect10@"})
+            self.assertEqual(response.status_code, 401)
+        self.assertEqual(self.client.post("/auth/login", json={"username": "staff", "password": self.password}).status_code, 429)
+
     def test_login_requires_trusted_origin(self):
         self.assertEqual(self.client.post("/auth/login", headers={"Origin": "https://evil.example"}, json={"username": "staff", "password": self.password}).status_code, 403)
         self.client.headers.pop("Origin")

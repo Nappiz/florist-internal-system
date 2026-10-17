@@ -1,5 +1,6 @@
 import os
 import unittest
+from datetime import date
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
@@ -10,7 +11,7 @@ from sqlalchemy.pool import StaticPool
 from configs.database import get_db
 from configs.settings import get_settings
 from main import create_app
-from models import Base, User
+from models import Base, User, CashAccount
 from services.user_security import hash_password
 
 
@@ -34,8 +35,10 @@ class AuthEndpointTestCase(unittest.TestCase):
         with Session(self.engine) as db:
             admin = User(username="superadmin", password_hash=hash_password(self.password), is_superadmin=True)
             ordinary = User(username="staff", password_hash=hash_password(self.password), is_superadmin=False)
-            db.add_all([admin, ordinary])
+            cash = CashAccount(name="Test cash", account_type="cash", opening_date=date(2020,1,1), history_mode="backfill")
+            db.add_all([admin, ordinary, cash])
             db.commit()
+            self.cash_account_id = str(cash.id)
             self.admin_id = str(admin.id)
             self.staff_id = str(ordinary.id)
 

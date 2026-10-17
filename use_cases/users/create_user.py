@@ -8,6 +8,7 @@ from schemas.auth_schema import AuthContext
 from schemas.user_schema import UserCreate
 from services.user_security import hash_password
 from use_cases.users.validate_password import validate_password
+from use_cases.audit.record import record
 
 
 def create_user(db: Session, actor: AuthContext, data: UserCreate) -> User:
@@ -19,10 +20,13 @@ def create_user(db: Session, actor: AuthContext, data: UserCreate) -> User:
     password = data.password.get_secret_value()
     validate_password(password)
     try:
-        user = users_crud.add(db, User(username=username, password_hash=hash_password(password), is_superadmin=False))
+        user = users_crud.add(db, User(username=username, password_hash=hash_password(password),
+            full_name=data.full_name, email=data.email.lower(), role=data.role,
+            is_superadmin=data.role == "superadmin", created_by=actor.user.id))
+        record(db, actor, "create", "user", user.id)
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(409, "Username tidak tersedia.") from None
+        raise HTTPException(409, "Username atau email tidak tersedia.") from None
     db.refresh(user)
     return user

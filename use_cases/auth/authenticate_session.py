@@ -21,7 +21,7 @@ def authenticate_session(db: Session, token: str | None) -> AuthContext:
     # concurrent logout/password updates cannot resurrect a stale session.
     user = users_crud.get_by_id(db, candidate.user_id)
     session = auth_sessions_crud.get_active(db, digest, datetime.now(UTC))
-    if user is None or session is None or session.credential_version != user.credential_version:
+    if user is None or not user.is_active or session is None or session.credential_version != user.credential_version:
         raise HTTPException(401, "Session tidak valid atau sudah berakhir.")
     expires_at = session.expires_at
     if expires_at.tzinfo is None:

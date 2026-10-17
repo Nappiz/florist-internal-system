@@ -12,3 +12,4 @@ class ListUsersEndpointTests(AuthEndpointTestCase):
         self.assertEqual(len(response.json()), 1)
         self.assertNotIn("password_hash", response.text)
         self.assertEqual(self.client.get("/users?limit=101").status_code, 422)
+        self.assertEqual(self.client.get("/users?offset=" + str(10**30)).status_code, 422)

@@ -9,7 +9,9 @@ class DeleteUserEndpointTests(AuthEndpointTestCase):
         self.login_as()
         self.assertEqual(self.client.delete(f"/users/{self.admin_id}").status_code, 403)
 
-    def test_superadmin_can_delete_staff(self):
+    def test_superadmin_can_disable_staff_and_preserve_history(self):
         self.login_as()
         self.assertEqual(self.client.delete(f"/users/{self.staff_id}").status_code, 204)
-        self.assertEqual(self.client.get(f"/users/{self.staff_id}").status_code, 404)
+        response = self.client.get(f"/users/{self.staff_id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["is_active"])

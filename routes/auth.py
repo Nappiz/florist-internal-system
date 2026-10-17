@@ -5,9 +5,11 @@ from configs.auth_dependencies import authenticated_context, csrf_context, trust
 from configs.database import get_db
 from configs.settings import get_settings
 from schemas.auth_schema import AuthContext, LoginRequest, SessionResponse
-from schemas.user_schema import UserResponse
+from schemas.user_schema import PasswordUpdate, ProfileUpdate, UserResponse
 from use_cases.auth.login import login
 from use_cases.auth.logout import logout
+from use_cases.users.change_password import change_password
+from use_cases.users.update_profile import update_profile
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -53,3 +55,13 @@ def logout_endpoint(response: Response, context: AuthContext = Depends(csrf_cont
         secure=settings.app_env == "production",
         samesite="strict",
     )
+
+
+@router.patch("/me/profile", response_model=UserResponse)
+def profile_endpoint(data: ProfileUpdate, context: AuthContext = Depends(csrf_context), db: Session = Depends(get_db)):
+    return update_profile(db, context, data)
+
+
+@router.patch("/me/password", response_model=UserResponse)
+def password_endpoint(data: PasswordUpdate, request: Request, context: AuthContext = Depends(csrf_context), db: Session = Depends(get_db)):
+    return change_password(db, context, data, request.client.host if request.client else "unknown")

@@ -40,3 +40,12 @@ class SeedSuperadminTests(unittest.TestCase):
             seed_superadmin(self.db, "InitialSeed10@")
         self.assertEqual(error.exception.status_code, 409)
         self.assertFalse(ordinary.is_superadmin)
+
+    def test_seed_accepts_configured_profile_without_resetting_existing_identity(self):
+        first = seed_superadmin(self.db, "InitialSeed10@", full_name="Owner Name", email="OWNER@EXAMPLE.COM")
+        self.assertEqual(first.full_name, "Owner Name")
+        self.assertEqual(first.email, "owner@example.com")
+        second = seed_superadmin(self.db, "ChangedSeed10@", full_name="Another Name", email="another@example.com")
+        self.assertEqual(second.id, first.id)
+        self.assertEqual(second.full_name, "Owner Name")
+        self.assertEqual(second.email, "owner@example.com")

@@ -4,6 +4,7 @@ from typing import Literal
 
 from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from schemas.user_schema import Email, FullName
 
 
 class Settings(BaseSettings):
@@ -13,11 +14,14 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    private_receipt_dir: Path = Path(__file__).resolve().parents[1] / "private" / "expense_receipts"
     database_url: SecretStr | None = None
     app_env: Literal["production", "development"] = "production"
     allowed_origins: list[str] = Field(default_factory=list)
     allowed_hosts: list[str] = Field(default_factory=lambda: ["localhost", "127.0.0.1"])
     seed_superadmin_password: SecretStr | None = None
+    seed_superadmin_full_name: FullName = "Superadmin"
+    seed_superadmin_email: Email = "superadmin@legacy.invalid"
 
     @model_validator(mode="after")
     def validate_origins(self):

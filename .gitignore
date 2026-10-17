@@ -2,6 +2,9 @@
 .tools/
 .uv-cache/
 .python/
+.backups/
+docs
+superpowers
 
 # Python
 .venv/
@@ -22,3 +25,6 @@ htmlcov/
 .DS_Store
 Thumbs.db
 .idea/
+
+# Private receipt storage
+private/

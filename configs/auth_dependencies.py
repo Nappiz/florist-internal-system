@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from configs.database import get_db
 from configs.settings import get_settings
+from crud import users_crud
 from schemas.auth_schema import AuthContext
 from use_cases.auth.authenticate_session import authenticate_session
 from use_cases.auth.validate_origin import validate_origin
@@ -23,3 +24,15 @@ def csrf_context(
 
 def trusted_origin(request: Request) -> None:
     validate_origin(request.headers.get("Origin"))
+
+
+def administration_context(
+    request: Request,
+    csrf_token: str | None = Header(default=None, alias="X-CSRF-Token"),
+    db: Session = Depends(get_db),
+) -> AuthContext:
+    # Take the administration lock BEFORE authentication locks the actor. This
+    # prevents two administrators updating each other from reversing lock order.
+    users_crud.lock_administration(db)
+    context = authenticate_session(db, request.cookies.get(get_settings().session_cookie_name))
+    return verify_csrf(context, csrf_token, request.headers.get("Origin"))

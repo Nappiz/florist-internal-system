@@ -1,13 +1,14 @@
 import os
 import re
 import unittest
+from datetime import date
 from uuid import uuid4
 
 from sqlalchemy.orm import Session
 from sqlalchemy.schema import CreateSchema, DropSchema
 
 from configs.database import get_engine
-from models import Base, User
+from models import Base, User, CashAccount
 from services.user_security import hash_password
 
 
@@ -25,9 +26,11 @@ class PostgresSecurityTestCase(unittest.TestCase):
         Base.metadata.create_all(self.engine)
         with Session(self.engine) as db:
             user = User(username="staff", password_hash=hash_password(self.password), is_superadmin=False)
-            db.add(user)
+            account=CashAccount(name="Test cash",account_type="cash",opening_date=date(2020,1,1),history_mode="backfill")
+            db.add_all([user,account])
             db.commit()
             self.user_id = user.id
+            self.cash_account_id = account.id
 
     def cleanup_schema(self):
         if re.fullmatch(r"auth_verify_[a-f0-9]{12}", self.schema_name) is None:
